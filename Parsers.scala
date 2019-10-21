@@ -96,12 +96,29 @@ sealed trait Expr
 final case class Num(n: Int) extends Expr
 final case class Op(o: Char, l: Expr, r: Expr) extends Expr
 
-trait Arithmetic extends Parsers {
+trait Natural extends Parsers {
   lazy val digit: Parser[Char, Int] =
     ('0'.p | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9') ^^ { _ - '0' }
   lazy val natural: Parser[Char, Int] =
     digit.rep1 ^^ { _.foldLeft(0)(_ * 10 + _) }
+}
 
+trait Arithmetic0 extends Natural {
+  lazy val multdiv: Parser[Char, Expr] =
+    multdiv ~ ('*'.p | '/') ~ brackets ^^ {
+      case l ~ o ~ r => Op(o, l, r): Expr
+    } | brackets
+  lazy val addsub: Parser[Char, Expr] =
+    addsub ~ ('+'.p | '-') ~ multdiv ^^ {
+      case l ~ o ~ r => Op(o, l, r): Expr
+    } | multdiv
+  lazy val brackets: Parser[Char, Expr] =
+    '(' ~> addsub <~ ')' | natural ^^ Num
+  lazy val expr: Parser[Char, Expr] =
+    addsub.just
+}
+
+trait Arithmetic1 extends Natural {
   lazy val multdiv: Parser[Char, Expr] =
     brackets ~ ('*'.p | '/') ~ multdiv ^^ {
       case l ~ o ~ r => Op(o, l, r): Expr
@@ -116,7 +133,26 @@ trait Arithmetic extends Parsers {
     addsub.just
 }
 
-object Main extends App with Arithmetic {
+trait Arithmetic2 extends Natural {
+  lazy val multdiv: Parser[Char, Expr] =
+    brackets ~ (('*'.p | '/') ~ brackets).rep ^^ {
+      case e ~ l => l.foldLeft(e) { (acc, nxt) => nxt match {
+        case o ~ x => Op(o, acc, x)
+      } }
+    }
+  lazy val addsub: Parser[Char, Expr] =
+    multdiv ~ (('+'.p | '-') ~ multdiv).rep ^^ {
+      case e ~ l => l.foldLeft(e) { (acc, nxt) => nxt match {
+        case o ~ x => Op(o, acc, x)
+      } }
+    }
+  lazy val brackets: Parser[Char, Expr] =
+    '(' ~> addsub <~ ')' | natural ^^ Num
+  lazy val expr: Parser[Char, Expr] =
+    addsub.just
+}
+
+object Main extends App with Arithmetic2 {
   val input = scala.io.StdIn.readLine()
   val result = expr.run(input)
   println(result)
