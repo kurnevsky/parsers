@@ -76,7 +76,7 @@ trait Parsers {
   def satisfy[A](f: A => Boolean): Parser[A, A] = new Parser[A, A] {
     override def apply(seq: Seq[A]): LazyList[(Seq[A], A)] =
       seq match {
-        case h :: t if f(h) => LazyList(t -> h)
+        case Seq(h, t@_*) if f(h) => LazyList(t -> h)
         case _ => LazyList.empty
       }
   }
