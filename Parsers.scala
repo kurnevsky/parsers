@@ -3,7 +3,7 @@ import scala.language.implicitConversions
 trait Parsers {
   case class ~[+A, +B](_1: A, _2: B)
 
-  trait Parser[A, B] extends (Seq[A] => LazyList[(Seq[A], B)]) { self =>
+  trait Parser[A, +B] extends (Seq[A] => LazyList[(Seq[A], B)]) { self =>
     def p: Parser[A, B] = self
 
     def map[C](f: B => C): Parser[A, C] = new Parser[A, C] {
@@ -30,8 +30,8 @@ trait Parsers {
     def <~[C](next: => Parser[A, C]): Parser[A, B] =
       self ~ next ^^ { case b ~ _ => b }
 
-    def |(other: => Parser[A, B]): Parser[A, B] = new Parser[A, B] {
-      override def apply(seq: Seq[A]): LazyList[(Seq[A], B)] =
+    def |[T >: B](other: => Parser[A, T]): Parser[A, T] = new Parser[A, T] {
+      override def apply(seq: Seq[A]): LazyList[(Seq[A], T)] =
         self(seq) ++ other(seq)
     }
 
