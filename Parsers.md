@@ -110,7 +110,7 @@ trait Parser[A, B] extends (Seq[A] => LazyList[(Seq[A], B)]) { self =>
 }
 ```
 
-# Простейшие парсеры
+# Комбинаторы парсеров
 
 Комбинатор отображения:
 
@@ -136,7 +136,23 @@ trait Parser[A, B] extends (Seq[A] => LazyList[(Seq[A], B)]) { self =>
 }
 ```
 
-# Простейшие парсеры
+# Комбинаторы парсеров
+
+Комбинатор монадического связывания:
+
+```scala
+trait Parser[A, B] extends (Seq[A] => LazyList[(Seq[A], B)]) { self =>
+  def flatMap[C](f: B => Parser[A, C]): Parser[A, C] = new Parser[A, C] {
+    override def apply(seq: Seq[A]): LazyList[(Seq[A], C)] =
+      for {
+        (tail1, b) <- self(seq)
+        (tail2, c) <- f(b)(tail1)
+      } yield tail2 -> c
+  }
+}
+```
+
+# Комбинаторы парсеров
 
 Вспомагательный класс для объединения результатов последовательно примененных парсеров:
 
@@ -156,7 +172,7 @@ case class ~[+A, +B](_1: A, _2: B)
 ~[~[A, B], C] <=> A ~ B ~ C
 ```
 
-# Простейшие парсеры
+# Комбинаторы парсеров
 
 Комбинатор последовательного соединения парсеров:
 
@@ -172,7 +188,7 @@ trait Parser[A, B] extends (Seq[A] => LazyList[(Seq[A], B)]) { self =>
 }
 ```
 
-# Простейшие парсеры
+# Комбинаторы парсеров
 
 С игнорированием левого результата:
 
@@ -194,7 +210,7 @@ trait Parser[A, B] extends (Seq[A] => LazyList[(Seq[A], B)]) { self =>
 }
 ```
 
-# Простейшие парсеры
+# Комбинаторы парсеров
 
 Комбинатор параллельного соединения парсеров:
 
@@ -207,7 +223,7 @@ trait Parser[A, B] extends (Seq[A] => LazyList[(Seq[A], B)]) { self =>
 }
 ```
 
-# Простейшие парсеры
+# Комбинаторы парсеров
 
 Комбинатор, гарантирующий завершение разбираемой строки:
 
@@ -220,23 +236,7 @@ trait Parser[A, B] extends (Seq[A] => LazyList[(Seq[A], B)]) { self =>
 }
 ```
 
-# Простейшие парсеры
-
-Комбинатор монадического связывания:
-
-```scala
-trait Parser[A, B] extends (Seq[A] => LazyList[(Seq[A], B)]) { self =>
-  def flatMap[C](f: B => Parser[A, C]): Parser[A, C] = new Parser[A, C] {
-    override def apply(seq: Seq[A]): LazyList[(Seq[A], C)] =
-      for {
-        (tail1, b) <- self(seq)
-        (tail2, c) <- f(b)(tail1)
-      } yield tail2 -> c
-  }
-}
-```
-
-# Простейшие парсеры
+# Комбинаторы парсеров
 
 Комбинаторы повторения:
 
@@ -254,6 +254,14 @@ trait Parser[A, B] extends (Seq[A] => LazyList[(Seq[A], B)]) { self =>
   def rep1: Parser[A, List[B]] =
     self ~ self.rep ^^ { case h ~ t => h :: t }
 }
+```
+
+# Пример разбора арифметических выражений
+
+```scala
+sealed trait Expr
+final case class Num(n: Int) extends Expr
+final case class Op(o: Char, l: Expr, r: Expr) extends Expr
 ```
 
 # Пример разбора арифметических выражений
