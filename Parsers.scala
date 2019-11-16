@@ -85,7 +85,7 @@ trait Parsers {
 
   implicit def token[A](k: Seq[A]): Parser[A, Seq[A]] = new Parser[A, Seq[A]] {
     override def apply(seq: Seq[A]): LazyList[(Seq[A], Seq[A])] =
-      if (seq.size >= k.size && k == seq.take(k.size))
+      if (k == seq.take(k.size))
         LazyList(seq.drop(k.size) -> k)
       else
         LazyList.empty
