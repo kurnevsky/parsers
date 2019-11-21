@@ -8,6 +8,8 @@ colortheme: default
 fontfamily: noto-sans
 aspectratio: 169
 fontsize: 10pt
+header-includes: |
+  \usepackage{tikz}
 ---
 
 # Определение парсера
@@ -319,13 +321,15 @@ Op(+,Num(5),Op(-,Num(3),Num(7)))
 . . .
 
 \begin{center}
-\begin{BVerbatim}
-  +
- / \
-5   -
-   / \
-  3   7
-\end{BVerbatim}
+  \begin{tikzpicture}[sibling distance=7em,
+      every node/.style = {shape=circle,
+      draw, align=center, minimum size=2em}]
+    \node {+}
+      child { node {5} }
+      child { node {-}
+        child { node {3} }
+        child { node {7} } };
+  \end{tikzpicture}
 \end{center}
 
 # Пример разбора арифметических выражений
@@ -448,13 +452,15 @@ Op(-,Op(+,Num(5),Num(3)),Num(7))
 \ 
 
 \begin{center}
-\begin{BVerbatim}
-    -
-   / \
-  +   7
- / \
-5   3
-\end{BVerbatim}
+  \begin{tikzpicture}[sibling distance=7em,
+      every node/.style = {shape=circle,
+      draw, align=center, minimum size=2em}]
+    \node {-}
+      child { node {+}
+        child { node {5} }
+        child { node {3} } }
+      child { node {7} };
+  \end{tikzpicture}
 \end{center}
 
 # Реальный мир
