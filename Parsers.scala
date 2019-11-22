@@ -103,7 +103,7 @@ trait Natural extends Parsers {
     digit.rep1 ^^ { _.foldLeft(0)(_ * 10 + _) }
 }
 
-trait Arithmetic0 extends Natural {
+trait ArithmeticLeftRecursive extends Natural {
   lazy val multdiv: Parser[Char, Expr] =
     multdiv ~ ('*'.p | '/') ~ brackets ^^ {
       case l ~ o ~ r => Op(o, l, r): Expr
@@ -118,7 +118,7 @@ trait Arithmetic0 extends Natural {
     addsub.just
 }
 
-trait Arithmetic1 extends Natural {
+trait ArithmeticRight extends Natural {
   lazy val multdiv: Parser[Char, Expr] =
     brackets ~ ('*'.p | '/') ~ multdiv ^^ {
       case l ~ o ~ r => Op(o, l, r): Expr
@@ -133,7 +133,7 @@ trait Arithmetic1 extends Natural {
     addsub.just
 }
 
-trait Arithmetic2 extends Natural {
+trait ArithmeticLeft extends Natural {
   lazy val multdiv: Parser[Char, Expr] =
     brackets ~ (('*'.p | '/') ~ brackets).rep ^^ {
       case e ~ l => l.foldLeft(e) { (acc, nxt) => nxt match {
@@ -152,8 +152,27 @@ trait Arithmetic2 extends Natural {
     addsub.just
 }
 
-object Main extends App with Arithmetic2 {
+trait ArithmeticAmbiguous extends Natural {
+  lazy val multdiv: Parser[Char, Expr] =
+    brackets ~ (('*'.p | '/') ~ multdiv).rep ^^ {
+      case e ~ l => l.foldLeft(e) { (acc, nxt) => nxt match {
+        case o ~ x => Op(o, acc, x)
+      } }
+    }
+  lazy val addsub: Parser[Char, Expr] =
+    multdiv ~ (('+'.p | '-') ~ addsub).rep ^^ {
+      case e ~ l => l.foldLeft(e) { (acc, nxt) => nxt match {
+        case o ~ x => Op(o, acc, x)
+      } }
+    }
+  lazy val brackets: Parser[Char, Expr] =
+    '(' ~> addsub <~ ')' | natural ^^ Num
+  lazy val expr: Parser[Char, Expr] =
+    addsub.just
+}
+
+object Main extends App with ArithmeticLeft {
   val input = scala.io.StdIn.readLine()
-  val result = expr.run(input)
-  println(result)
+  val result = expr(input).map(_._2)
+  println(result.toList.mkString("\n"))
 }
