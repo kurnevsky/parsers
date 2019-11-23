@@ -12,9 +12,75 @@ header-includes: |
   \usepackage{tikz}
 ---
 
+# Задача
+
+Разобрать выражение `7+5-3*2` в дерево:
+
+\begin{center}
+  \begin{tikzpicture}[
+      every node/.style = {shape=circle, draw,
+      align=center, minimum size=2em},
+      level 1/.style = {sibling distance=11em},
+      level 2/.style = {sibling distance=7em}]
+    \node {-}
+      child { node {+}
+        child { node {7} }
+        child { node {5} }
+      }
+      child { node {*}
+        child { node {3} }
+        child { node {2} }
+      };
+  \end{tikzpicture}
+\end{center}
+
+# antlr
+
+```antlr
+grammar Expr;
+expr: expr ('*'|'/') expr
+    | expr ('+'|'-') expr
+    | INT
+    | '(' expr ')'
+    ;
+INT: [0-9]+ ;
+```
+
+# antlr
+
+```
+> antlr4 -visitor Expr.g4
+
+ExprBaseListener.java
+ExprBaseVisitor.java
+ExprLexer.java
+ExprListener.java
+ExprParser.java
+ExprVisitor.java
+```
+
+# antlr
+
+## Listener
+
+```java
+public interface ExprListener extends ParseTreeListener {
+	void enterExpr(ExprParser.ExprContext ctx);
+	void exitExpr(ExprParser.ExprContext ctx);
+}
+```
+
+## Visitor
+
+```java
+public interface ExprVisitor<T> extends ParseTreeVisitor<T> {
+	T visitExpr(ExprParser.ExprContext ctx);
+}
+```
+
 # Определение парсера
 
-Парсер - это функция, принимающая на вход строку и возвращающая какое-либо значение:
+Парсер - это функция, принимающая на вход строку и возвращающая значение:
 
 ```scala
 trait Parser[T] extends (String => T)
@@ -38,7 +104,7 @@ trait Parser[T] extends (String => LazyList[(String, T)])
 
 # Простейшие парсеры
 
-Парсер, распознающий символ по условию:
+## Парсер, распознающий символ по условию
 
 ```scala
 def satisfy(f: Char => Boolean): Parser[Char] = new Parser[Char] {
@@ -52,7 +118,7 @@ def satisfy(f: Char => Boolean): Parser[Char] = new Parser[Char] {
 
 . . .
 
-Парсер, распознающий конкретный символ:
+## Парсер, распознающий конкретный символ
 
 ```scala
 implicit def symbol(c: Char): Parser[Char] = satisfy(_ == c)
@@ -60,7 +126,7 @@ implicit def symbol(c: Char): Parser[Char] = satisfy(_ == c)
 
 # Простейшие парсеры
 
-Парсер, распознающий последовательность символов:
+## Парсер, распознающий последовательность символов
 
 ```scala
 implicit def token(t: String): Parser[String] = new Parser[String] {
@@ -74,7 +140,7 @@ implicit def token(t: String): Parser[String] = new Parser[String] {
 
 # Простейшие парсеры
 
-Парсер, не принимающий ничего на вход, но всегда возвращающий данное значение:
+## Парсер, всегда возвращающий данное значение
 
 ```scala
 def succeed[T](v: T): Parser[T] = new Parser[T] {
@@ -85,7 +151,7 @@ def succeed[T](v: T): Parser[T] = new Parser[T] {
 
 # Простейшие парсеры
 
-Парсер, который не распознаёт ни один символ входной строки:
+## Парсер, который не распознаёт ни один символ входной строки
 
 ```scala
 def fail: Parser[Nothing] = new Parser[Nothing] {
@@ -96,7 +162,7 @@ def fail: Parser[Nothing] = new Parser[Nothing] {
 
 # Комбинаторы парсеров
 
-Комбинатор тождественного отображения:
+## Комбинатор тождественного отображения
 
 ```scala
 trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
@@ -106,7 +172,7 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 
 # Комбинаторы парсеров
 
-Комбинатор отображения:
+## Комбинатор отображения
 
 ```scala
 trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
@@ -121,7 +187,7 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 
 . . .
 
-Синоним:
+## Синоним
 
 ```scala
 trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
@@ -132,7 +198,7 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 
 # Комбинаторы парсеров
 
-Комбинатор монадического связывания:
+## Комбинатор монадического связывания
 
 ```scala
 trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
@@ -148,7 +214,7 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 
 # Комбинаторы парсеров
 
-Вспомагательный класс для объединения результатов последовательно примененных парсеров:
+Класс для объединения результатов последовательно примененных парсеров:
 
 ```scala
 case class ~[+A, +B](_1: A, _2: B)
@@ -168,7 +234,7 @@ case class ~[+A, +B](_1: A, _2: B)
 
 # Комбинаторы парсеров
 
-Комбинатор последовательного соединения парсеров:
+## Комбинатор последовательного соединения парсеров
 
 ```scala
 trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
@@ -184,7 +250,7 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 
 # Комбинаторы парсеров
 
-С игнорированием левого результата:
+## С игнорированием левого результата
 
 ```scala
 trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
@@ -193,7 +259,7 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 }
 ```
 
-С игнорированием правого результата:
+## С игнорированием правого результата
 
 ```scala
 trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
@@ -204,7 +270,7 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 
 # Комбинаторы парсеров
 
-Комбинатор параллельного соединения парсеров:
+## Комбинатор параллельного соединения парсеров
 
 ```scala
 trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
@@ -217,7 +283,7 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 
 # Комбинаторы парсеров
 
-Комбинатор, гарантирующий завершение разбираемой строки:
+## Комбинатор, гарантирующий завершение разбираемой строки
 
 ```scala
 trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
@@ -230,7 +296,7 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 
 # Комбинаторы парсеров
 
-Комбинаторы повторения:
+## Комбинатор повторения 0 или более раз
 
 ```scala
 trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
@@ -240,6 +306,8 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 ```
 
 . . .
+
+## Комбинатор повторения 1 или более раз
 
 ```scala
 trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
@@ -305,18 +373,14 @@ lazy val expr: Parser[Expr] =
 # Пример разбора арифметических выражений
 
 ```
-> 5+3-7
+> 7+5-3*2
 ```
-
-\ 
 
 . . .
 
 ```
-Op(+,Num(5),Op(-,Num(3),Num(7)))
+Op(+,Num(7),Op(-,Num(5),Op(*,Num(3),Num(2))))
 ```
-
-\ 
 
 . . .
 
@@ -325,10 +389,14 @@ Op(+,Num(5),Op(-,Num(3),Num(7)))
       every node/.style = {shape=circle,
       draw, align=center, minimum size=2em}]
     \node {+}
-      child { node {5} }
+      child { node {7} }
       child { node {-}
-        child { node {3} }
-        child { node {7} } };
+        child { node {5} }
+        child { node {*}
+          child { node {3} }
+          child { node {2} }
+        }
+      };
   \end{tikzpicture}
 \end{center}
 
@@ -352,45 +420,39 @@ lazy val expr: Parser[Expr] =
 # Пример разбора арифметических выражений
 
 ```
-> 5+3-7
+> 7+5-3*2
 ```
 
 ```
 Exception in thread "main" java.lang.StackOverflowError
-        at Arithmetic0.addsub$(Parsers.scala:114)
-        at Main$.addsub$lzycompute(Parsers.scala:155)
-        at Main$.addsub(Parsers.scala:155)
-        at Arithmetic0.addsub(Parsers.scala:112)
-        at Arithmetic0.addsub$(Parsers.scala:114)
-        at Main$.addsub$lzycompute(Parsers.scala:155)
-        at Main$.addsub(Parsers.scala:155)
-        at Arithmetic0.addsub(Parsers.scala:112)
-        at Arithmetic0.addsub$(Parsers.scala:114)
-        at Main$.addsub$lzycompute(Parsers.scala:155)
-        at Main$.addsub(Parsers.scala:155)
-        at Arithmetic0.addsub(Parsers.scala:112)
-        at Arithmetic0.addsub$(Parsers.scala:114)
-        at Main$.addsub$lzycompute(Parsers.scala:155)
-        at Main$.addsub(Parsers.scala:155)
-        at Arithmetic0.addsub(Parsers.scala:112)
-        at Arithmetic0.addsub$(Parsers.scala:114)
-        at Main$.addsub$lzycompute(Parsers.scala:155)
-        at Main$.addsub(Parsers.scala:155)
-        at Arithmetic0.addsub(Parsers.scala:112)
-        at Arithmetic0.addsub$(Parsers.scala:114)
-        at Main$.addsub$lzycompute(Parsers.scala:155)
-        at Main$.addsub(Parsers.scala:155)
-        at Arithmetic0.addsub(Parsers.scala:112)
-        at Arithmetic0.addsub$(Parsers.scala:114)
-        at Main$.addsub$lzycompute(Parsers.scala:155)
-        at Main$.addsub(Parsers.scala:155)
-        at Arithmetic0.addsub(Parsers.scala:112)
-        at Arithmetic0.addsub$(Parsers.scala:114)
-        at Main$.addsub$lzycompute(Parsers.scala:155)
-        at Main$.addsub(Parsers.scala:155)
-        at Arithmetic0.addsub(Parsers.scala:112)
-        at Arithmetic0.addsub$(Parsers.scala:114)
-        at Main$.addsub$lzycompute(Parsers.scala:155)
+        at ArithmeticLeftRecursive.addsub(Parsers.scala:112)
+        at ArithmeticLeftRecursive.addsub$(Parsers.scala:114)
+        at Main$.addsub$lzycompute(Parsers.scala:174)
+        at Main$.addsub(Parsers.scala:174)
+        at ArithmeticLeftRecursive.addsub(Parsers.scala:112)
+        at ArithmeticLeftRecursive.addsub$(Parsers.scala:114)
+        at Main$.addsub$lzycompute(Parsers.scala:174)
+        at Main$.addsub(Parsers.scala:174)
+        at ArithmeticLeftRecursive.addsub(Parsers.scala:112)
+        at ArithmeticLeftRecursive.addsub$(Parsers.scala:114)
+        at Main$.addsub$lzycompute(Parsers.scala:174)
+        at Main$.addsub(Parsers.scala:174)
+        at ArithmeticLeftRecursive.addsub(Parsers.scala:112)
+        at ArithmeticLeftRecursive.addsub$(Parsers.scala:114)
+        at Main$.addsub$lzycompute(Parsers.scala:174)
+        at Main$.addsub(Parsers.scala:174)
+        at ArithmeticLeftRecursive.addsub(Parsers.scala:112)
+        at ArithmeticLeftRecursive.addsub$(Parsers.scala:114)
+        at Main$.addsub$lzycompute(Parsers.scala:174)
+        at Main$.addsub(Parsers.scala:174)
+        at ArithmeticLeftRecursive.addsub(Parsers.scala:112)
+        at ArithmeticLeftRecursive.addsub$(Parsers.scala:114)
+        at Main$.addsub$lzycompute(Parsers.scala:174)
+        at Main$.addsub(Parsers.scala:174)
+        at ArithmeticLeftRecursive.addsub(Parsers.scala:112)
+        at ArithmeticLeftRecursive.addsub$(Parsers.scala:114)
+        at Main$.addsub$lzycompute(Parsers.scala:174)
+        at Main$.addsub(Parsers.scala:174)
 ```
 
 # Левая рекурсия!
@@ -440,26 +502,28 @@ lazy val expr: Parser[Expr] =
 # Пример разбора арифметических выражений
 
 ```
-> 5+3-7
+> 7+5-3*2
 ```
-
-\ 
 
 ```
 Op(-,Op(+,Num(5),Num(3)),Num(7))
 ```
 
-\ 
-
 \begin{center}
-  \begin{tikzpicture}[sibling distance=7em,
-      every node/.style = {shape=circle,
-      draw, align=center, minimum size=2em}]
+  \begin{tikzpicture}[
+      every node/.style = {shape=circle, draw,
+      align=center, minimum size=2em},
+      level 1/.style = {sibling distance=11em},
+      level 2/.style = {sibling distance=7em}]
     \node {-}
       child { node {+}
+        child { node {7} }
         child { node {5} }
-        child { node {3} } }
-      child { node {7} };
+      }
+      child { node {*}
+        child { node {3} }
+        child { node {2} }
+      };
   \end{tikzpicture}
 \end{center}
 
