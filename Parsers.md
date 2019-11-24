@@ -341,8 +341,8 @@ lazy val natural: Parser[Int] =
 # Пример разбора арифметических выражений
 
 ```scala
-lazy val multdiv: Parser[Expr] =
-  brackets ~ ('*'.p | '/') ~ multdiv ^^ {
+lazy val muldiv: Parser[Expr] =
+  brackets ~ ('*'.p | '/') ~ muldiv ^^ {
     case l ~ o ~ r => Op(o, l, r): Expr
   } | brackets
 ```
@@ -351,9 +351,9 @@ lazy val multdiv: Parser[Expr] =
 
 ```scala
 lazy val addsub: Parser[Expr] =
-  multdiv ~ ('+'.p | '-') ~ addsub ^^ {
+  muldiv ~ ('+'.p | '-') ~ addsub ^^ {
     case l ~ o ~ r => Op(o, l, r): Expr
-  } | multdiv
+  } | muldiv
 ```
 
 . . .
@@ -403,14 +403,14 @@ Op(+,Num(7),Op(-,Num(5),Op(*,Num(3),Num(2))))
 # Пример разбора арифметических выражений
 
 ```scala
-lazy val multdiv: Parser[Expr] =
-  multdiv ~ ('*'.p | '/') ~ brackets ^^ {
+lazy val muldiv: Parser[Expr] =
+  muldiv ~ ('*'.p | '/') ~ brackets ^^ {
     case l ~ o ~ r => Op(o, l, r): Expr
   } | brackets
 lazy val addsub: Parser[Expr] =
-  addsub ~ ('+'.p | '-') ~ multdiv ^^ {
+  addsub ~ ('+'.p | '-') ~ muldiv ^^ {
     case l ~ o ~ r => Op(o, l, r): Expr
-  } | multdiv
+  } | muldiv
 lazy val brackets: Parser[Expr] =
   '(' ~> addsub <~ ')' | natural ^^ Num
 lazy val expr: Parser[Expr] =
@@ -457,38 +457,39 @@ Exception in thread "main" java.lang.StackOverflowError
 
 # Левая рекурсия!
 
-```
-A  -> Aa|b
-```
-
-\ 
-
-. . .
-
-```
-A  -> bA'
-A' -> aA'|e
-```
-
-\ 
-
-. . .
-
-```
-A  -> ba*
-```
+\begin{center}
+  \usetikzlibrary{arrows.meta}
+  \begin{tikzpicture}[sibling distance=9em, level distance=6em,
+      every node/.style = {shape=circle, draw, align=center},
+      label/.style = { shape=rectangle, draw=none, above}, sloped]
+    \node {}
+      child [-{Latex[length=0.7em]}] { node {}
+        child [-{Latex[length=0.7em]}] { node {}
+          child [-{Latex[length=0.7em]}] {
+            node [draw=none] {\Large \texttt{$\infty$}}
+            edge from parent node [label] {addsub}
+          }
+          child [-, dashed] { edge from parent node [label] {muldiv} }
+          edge from parent node [label] {addsub}
+        }
+        child [-, dashed] { edge from parent node [label] {muldiv} }
+        edge from parent node [label] {addsub}
+      }
+      child [-, dashed] { edge from parent node [label] {muldiv} };
+  \end{tikzpicture}
+\end{center}
 
 # Пример разбора арифметических выражений
 
 ```scala
-lazy val multdiv: Parser[Expr] =
+lazy val muldiv: Parser[Expr] =
   brackets ~ (('*'.p | '/') ~ brackets).rep ^^ {
     case e ~ l => l.foldLeft(e) { (acc, nxt) => nxt match {
       case o ~ x => Op(o, acc, x)
     } }
   }
 lazy val addsub: Parser[Expr] =
-  multdiv ~ (('+'.p | '-') ~ multdiv).rep ^^ {
+  muldiv ~ (('+'.p | '-') ~ muldiv).rep ^^ {
     case e ~ l => l.foldLeft(e) { (acc, nxt) => nxt match {
       case o ~ x => Op(o, acc, x)
     } }
@@ -562,14 +563,14 @@ case class Error(msg: String, next: Input) extends ParseResult[T]
 # scala-parser-combinators
 
 ```scala
-lazy val multdiv: Parser[Expr] =
-  brackets ~ (elem('*') | '/') ~ multdiv ^^ {
+lazy val muldiv: Parser[Expr] =
+  brackets ~ (elem('*') | '/') ~ muldiv ^^ {
     case l ~ o ~ r => Op(o, l, r)
   } | brackets
 lazy val addsub: Parser[Expr] =
-  multdiv ~ (elem('+') | '-') ~ addsub ^^ {
+  muldiv ~ (elem('+') | '-') ~ addsub ^^ {
     case l ~ o ~ r => Op(o, l, r)
-  } | multdiv
+  } | muldiv
 lazy val brackets: Parser[Expr] =
   '(' ~> addsub <~ ')' | natural ^^ Num
 lazy val expr: Parser[Expr] =
@@ -579,14 +580,14 @@ lazy val expr: Parser[Expr] =
 # atto
 
 ```scala
-lazy val multdiv: Parser[Expr] =
-  brackets ~ (char('*') | char('/')) ~ multdiv -| {
+lazy val muldiv: Parser[Expr] =
+  brackets ~ (char('*') | char('/')) ~ muldiv -| {
     case ((l, o), r) => Op(o, l, r)
   } | brackets
 lazy val addsub: Parser[Expr] =
-  multdiv ~ (char('+') | char('-')) ~ addsub -| {
+  muldiv ~ (char('+') | char('-')) ~ addsub -| {
     case ((l, o), r) => Op(o, l, r)
-  } | multdiv
+  } | muldiv
 lazy val brackets: Parser[Expr] =
   char('(') ~> addsub <~ char(')') | natural -| Num
 lazy val expr: Parser[Expr] =
@@ -596,15 +597,15 @@ lazy val expr: Parser[Expr] =
 # parboiled
 
 ```scala
-def multdiv: Rule1[Expr] = rule {
-   brackets ~ push(cursorChar) ~ (ch('*') | '/') ~ multdiv ~> {
+def muldiv: Rule1[Expr] = rule {
+   brackets ~ push(cursorChar) ~ (ch('*') | '/') ~ muldiv ~> {
      (l, o, r) => Op(o, l, r)
    } | brackets
 }
 def addsub: Rule1[Expr] = rule {
-  multdiv ~ push(cursorChar) ~ (ch('+') | '-') ~ addsub ~> {
+  muldiv ~ push(cursorChar) ~ (ch('+') | '-') ~ addsub ~> {
     (l, o, r) => Op(o, l, r)
-  } | multdiv
+  } | muldiv
 }
 def brackets: Rule1[Expr] = rule {
   '(' ~ addsub ~ ')' | natural ~> Num
@@ -617,14 +618,14 @@ def expr: Rule1[Expr] = rule {
 # gll-combinators
 
 ```scala
-lazy val multdiv: Parser[Expr] =
-  brackets ~ ("*" | "/") ~ multdiv ^^ {
+lazy val muldiv: Parser[Expr] =
+  brackets ~ ("*" | "/") ~ muldiv ^^ {
     case (l, o, r) => Op(o.head, l, r)
   } | brackets
 lazy val addsub: Parser[Expr] =
-  multdiv ~ ("+" | "-") ~ addsub ^^ {
+  muldiv ~ ("+" | "-") ~ addsub ^^ {
     case (l, o, r) => Op(o.head, l, r)
-  } | multdiv
+  } | muldiv
 lazy val brackets: Parser[Expr] =
   "(" ~> addsub <~ ")" | natural ^^ Num
 lazy val expr: Parser[Expr] =
@@ -634,14 +635,14 @@ lazy val expr: Parser[Expr] =
 # fastparse
 
 ```scala
-def multdiv[_: P]: P[Expr] =
-  (brackets ~ (P("*").map(_ => '*') | P("/").map(_ => '/')) ~ multdiv).map {
+def muldiv[_: P]: P[Expr] =
+  (brackets ~ (P("*").map(_ => '*') | P("/").map(_ => '/')) ~ muldiv).map {
     case (l, o, r) => Op(o, l, r)
   } | brackets
 def addsub[_: P]: P[Expr] =
-  (multdiv ~ (P("+").map(_ => '+') | P("-").map(_ => '-')) ~ addsub).map {
+  (muldiv ~ (P("+").map(_ => '+') | P("-").map(_ => '-')) ~ addsub).map {
     case (l, o, r) => Op(o, l, r)
-  } | multdiv
+  } | muldiv
 def brackets[_: P]: P[Expr] =
   P(("(" ~/ addsub ~ ")") | natural.map(Num))
 def expr[_: P]: P[Expr] =
