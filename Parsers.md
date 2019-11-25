@@ -104,24 +104,16 @@ trait Parser[T] extends (String => LazyList[(String, T)])
 
 # Простейшие парсеры
 
-## Парсер, распознающий символ по условию
-
-```scala
-def satisfy(f: Char => Boolean): Parser[Char] = new Parser[Char] {
-  override def apply(s: String): LazyList[(String, Char)] =
-    s.headOption match {
-      case Some(c) if f(c) => LazyList(s.tail -> c)
-      case _ => LazyList.empty
-    }
-}
-```
-
-. . .
-
 ## Парсер, распознающий конкретный символ
 
 ```scala
-implicit def symbol(c: Char): Parser[Char] = satisfy(_ == c)
+implicit def symbol(c: Char): Parser[Char] = new Parser[Char] {
+  override def apply(s: String): LazyList[(String, Char)] =
+    s.headOption match {
+      case Some(`c`) => LazyList(s.tail -> c)
+      case _ => LazyList.empty
+    }
+}
 ```
 
 # Простейшие парсеры
@@ -149,7 +141,7 @@ def succeed[T](v: T): Parser[T] = new Parser[T] {
 }
 ```
 
-# Простейшие парсеры
+. . .
 
 ## Парсер, который не распознаёт ни один символ входной строки
 
@@ -168,6 +160,13 @@ def fail: Parser[Nothing] = new Parser[Nothing] {
 trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
   def p: Parser[T] = self
 }
+```
+
+# Комбинаторы парсеров
+
+```scala
+'a'.p
+"abc".p
 ```
 
 # Комбинаторы парсеров
@@ -198,6 +197,13 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 
 # Комбинаторы парсеров
 
+```scala
+"123".map(_.toInt)
+"123" ^^ { _.toInt }
+```
+
+# Комбинаторы парсеров
+
 ## Комбинатор монадического связывания
 
 ```scala
@@ -209,6 +215,19 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
         (tail2, c) <- f(b)(tail1)
       } yield tail2 -> c
   }
+}
+```
+
+# Комбинаторы парсеров
+
+```scala
+val number: Parser[Int] = ???
+
+number.flatMap { n =>
+  if (n % 2 == 0)
+    succeed(n / 2)
+  else
+    fail
 }
 ```
 
@@ -232,6 +251,10 @@ case class ~[+A, +B](_1: A, _2: B)
 ~[~[A, B], C] <=> A ~ B ~ C
 ```
 
+```
+~[~[~[A, B], C], D] <=> A ~ B ~ C ~ D
+```
+
 # Комбинаторы парсеров
 
 ## Комбинатор последовательного соединения парсеров
@@ -245,6 +268,16 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
         (tail2, c) <- next(tail1)
       } yield tail2 -> new ~(b, c)
   }
+}
+```
+
+# Комбинаторы парсеров
+
+```scala
+val number: Parser[Int] = ???
+
+number ~ ',' ~ number ^^ {
+  case n1 ~ _ ~ n2 => n1 + n2
 }
 ```
 
@@ -270,6 +303,14 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 
 # Комбинаторы парсеров
 
+```scala
+val number: Parser[Int] = ???
+
+'(' ~> number <~ ')'
+```
+
+# Комбинаторы парсеров
+
 ## Комбинатор параллельного соединения парсеров
 
 ```scala
@@ -283,15 +324,8 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 
 # Комбинаторы парсеров
 
-## Комбинатор, гарантирующий завершение разбираемой строки
-
 ```scala
-trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
-  def just: Parser[T] = new Parser[T] {
-    override def apply(s: String): LazyList[(String, T)] =
-      self(s).filter { case (tail, _) => tail.isEmpty }
-  }
-}
+'0'.p | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
 ```
 
 # Комбинаторы парсеров
@@ -313,6 +347,28 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
   def rep1: Parser[List[T]] =
     self ~ self.rep ^^ { case h ~ t => h :: t }
+}
+```
+
+# Комбинаторы парсеров
+
+```scala
+val number: Parser[Int] = ???
+
+(number <~ ',').rep
+(number <~ ',').rep1
+```
+
+# Комбинаторы парсеров
+
+## Комбинатор, гарантирующий завершение разбираемой строки
+
+```scala
+trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
+  def just: Parser[T] = new Parser[T] {
+    override def apply(s: String): LazyList[(String, T)] =
+      self(s).filter { case (tail, _) => tail.isEmpty }
+  }
 }
 ```
 
