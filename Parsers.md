@@ -14,7 +14,7 @@ header-includes: |
 
 # Задача
 
-Разобрать выражение `7+5-3*2` в дерево:
+Разобрать выражение `7-1-3*2` в дерево:
 
 \begin{center}
   \begin{tikzpicture}[
@@ -23,9 +23,9 @@ header-includes: |
       level 1/.style = {sibling distance=11em},
       level 2/.style = {sibling distance=7em}]
     \node {-}
-      child { node {+}
+      child { node {-}
         child { node {7} }
-        child { node {5} }
+        child { node {1} }
       }
       child { node {*}
         child { node {3} }
@@ -429,13 +429,13 @@ lazy val expr: Parser[Expr] =
 # Пример разбора арифметических выражений
 
 ```
-> 7+5-3*2
+> 7-1-3*2
 ```
 
 . . .
 
 ```
-Op(+,Num(7),Op(-,Num(5),Op(*,Num(3),Num(2))))
+Op(-,Num(7),Op(-,Num(1),Op(*,Num(3),Num(2))))
 ```
 
 . . .
@@ -444,10 +444,10 @@ Op(+,Num(7),Op(-,Num(5),Op(*,Num(3),Num(2))))
   \begin{tikzpicture}[sibling distance=7em,
       every node/.style = {shape=circle,
       draw, align=center, minimum size=2em}]
-    \node {+}
+    \node {-}
       child { node {7} }
       child { node {-}
-        child { node {5} }
+        child { node {1} }
         child { node {*}
           child { node {3} }
           child { node {2} }
@@ -476,7 +476,7 @@ lazy val expr: Parser[Expr] =
 # Пример разбора арифметических выражений
 
 ```
-> 7+5-3*2
+> 7-1-3*2
 ```
 
 ```
@@ -559,11 +559,11 @@ lazy val expr: Parser[Expr] =
 # Пример разбора арифметических выражений
 
 ```
-> 7+5-3*2
+> 7-1-3*2
 ```
 
 ```
-Op(-,Op(+,Num(5),Num(3)),Num(7))
+Op(-,Op(-,Num(7),Num(1)),Op(*,Num(3),Num(2)))
 ```
 
 \begin{center}
@@ -573,9 +573,9 @@ Op(-,Op(+,Num(5),Num(3)),Num(7))
       level 1/.style = {sibling distance=11em},
       level 2/.style = {sibling distance=7em}]
     \node {-}
-      child { node {+}
+      child { node {-}
         child { node {7} }
-        child { node {5} }
+        child { node {1} }
       }
       child { node {*}
         child { node {3} }
