@@ -83,7 +83,7 @@ public interface ExprVisitor<T> extends ParseTreeVisitor<T> {
 Парсер - это функция, принимающая на вход строку и возвращающая значение:
 
 ```scala
-trait Parser[T] extends (String => T)
+trait Parser[+T] extends (String => T)
 ```
 
 . . .
@@ -91,7 +91,7 @@ trait Parser[T] extends (String => T)
 Необходимо возвращать неразобранную часть строки:
 
 ```scala
-trait Parser[T] extends (String => (String, T))
+trait Parser[+T] extends (String => (String, T))
 ```
 
 . . .
@@ -99,7 +99,7 @@ trait Parser[T] extends (String => (String, T))
 Строка может быть разобрана множеством способов:
 
 ```scala
-trait Parser[T] extends (String => LazyList[(String, T)])
+trait Parser[+T] extends (String => LazyList[(String, T)])
 ```
 
 # Простейшие парсеры
