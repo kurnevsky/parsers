@@ -346,8 +346,6 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 }
 ```
 
-. . .
-
 ## Комбинатор повторения 1 или более раз
 
 ```scala
