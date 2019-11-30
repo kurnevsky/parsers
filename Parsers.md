@@ -171,6 +171,8 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 
 # Комбинаторы парсеров
 
+Создание парсеров:
+
 ```scala
 'a'.p
 "abc".p
@@ -204,9 +206,11 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 
 # Комбинаторы парсеров
 
+Парсер числа 42:
+
 ```scala
-"123".map(_.toInt)
-"123" ^^ { _.toInt }
+"42".map(_.toInt)
+"42" ^^ { _.toInt }
 ```
 
 # Комбинаторы парсеров
@@ -226,6 +230,8 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 ```
 
 # Комбинаторы парсеров
+
+Парсер четных чисел:
 
 ```scala
 val number: Parser[Int] = ???
@@ -280,6 +286,8 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 
 # Комбинаторы парсеров
 
+Парсер двух чисел, разделенных запятой:
+
 ```scala
 val number: Parser[Int] = ???
 
@@ -310,6 +318,8 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 
 # Комбинаторы парсеров
 
+Парсер числа в скобках:
+
 ```scala
 val number: Parser[Int] = ???
 
@@ -330,6 +340,8 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 ```
 
 # Комбинаторы парсеров
+
+Парсер цифры:
 
 ```scala
 '0'.p | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
@@ -356,6 +368,8 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 ```
 
 # Комбинаторы парсеров
+
+Парсер списка чисел, разделенных запятой:
 
 ```scala
 val number: Parser[Int] = ???
