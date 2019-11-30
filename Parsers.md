@@ -18,10 +18,19 @@ header-includes: |
 
 \begin{center}
   \begin{tikzpicture}[
-      every node/.style = {shape=circle, draw,
-      align=center, minimum size=2em},
-      level 1/.style = {sibling distance=11em},
-      level 2/.style = {sibling distance=7em}]
+    every node/.style = {
+      shape = circle,
+      draw,
+      align = center,
+      minimum size = 2em
+    },
+    level 1/.style = {
+      sibling distance = 11em
+    },
+    level 2/.style = {
+      sibling distance = 7em
+    }
+  ]
     \node {-}
       child { node {-}
         child { node {7} }
@@ -441,9 +450,15 @@ Op(-,Num(7),Op(-,Num(1),Op(*,Num(3),Num(2))))
 . . .
 
 \begin{center}
-  \begin{tikzpicture}[sibling distance=7em,
-      every node/.style = {shape=circle,
-      draw, align=center, minimum size=2em}]
+  \begin{tikzpicture}[
+    sibling distance = 7em,
+    every node/.style = {
+      shape = circle,
+      draw,
+      align = center,
+      minimum size = 2em
+    }
+  ]
     \node {-}
       child { node {7} }
       child { node {-}
@@ -453,6 +468,50 @@ Op(-,Num(7),Op(-,Num(1),Op(*,Num(3),Num(2))))
           child { node {2} }
         }
       };
+  \end{tikzpicture}
+\end{center}
+
+# Пример разбора арифметических выражений
+
+\begin{center}
+  \begin{tikzpicture}[
+    sibling distance = 7em,
+    every node/.style = {
+      shape = circle,
+      draw,
+      align = center,
+      minimum size = 2em
+    }
+  ]
+
+    \begin{scope}[xshift=-13em]
+      \node {-}
+        child { node {a} }
+        child { node {-}
+          child { node {b} }
+          child { node {-}
+            child { node {c} }
+            child { node {d} }
+          }
+        };
+    \end{scope}
+
+    \begin{scope}[xshift=3.5em]
+      \draw[<-, very thick] (-0.9,-2) -- (-1.4,-2);
+    \end{scope}
+
+    \begin{scope}[xshift=13em]
+      \node {-}
+        child { node {-}
+          child { node {-}
+            child { node {a} }
+            child { node {b} }
+          }
+          child { node {c} }
+        }
+        child { node {d} };
+    \end{scope}
+
   \end{tikzpicture}
 \end{center}
 
@@ -515,14 +574,26 @@ Exception in thread "main" java.lang.StackOverflowError
 
 \begin{center}
   \usetikzlibrary{arrows.meta}
-  \begin{tikzpicture}[sibling distance=9em, level distance=6em,
-      every node/.style = {shape=circle, draw, align=center},
-      label/.style = { shape=rectangle, draw=none, above}, sloped]
+  \begin{tikzpicture}[
+    sibling distance = 9em,
+    level distance = 6em,
+    every node/.style = {
+      shape = circle,
+      draw,
+      align = center
+    },
+    label/.style = {
+      shape = rectangle,
+      draw = none,
+      above
+    },
+    sloped
+  ]
     \node {}
       child [-{Latex[length=0.7em]}] { node {}
         child [-{Latex[length=0.7em]}] { node {}
           child [-{Latex[length=0.7em]}] {
-            node [draw=none] {\Large \texttt{$\infty$}}
+            node [draw=none] {\Large $\infty$}
             edge from parent node [label] {addsub}
           }
           child [-, dashed] { edge from parent node [label] {muldiv} }
@@ -568,10 +639,19 @@ Op(-,Op(-,Num(7),Num(1)),Op(*,Num(3),Num(2)))
 
 \begin{center}
   \begin{tikzpicture}[
-      every node/.style = {shape=circle, draw,
-      align=center, minimum size=2em},
-      level 1/.style = {sibling distance=11em},
-      level 2/.style = {sibling distance=7em}]
+    every node/.style = {
+      shape = circle,
+      draw,
+      align = center,
+      minimum size = 2em
+    },
+    level 1/.style = {
+      sibling distance = 11em
+    },
+    level 2/.style = {
+      sibling distance = 7em
+    }
+  ]
     \node {-}
       child { node {-}
         child { node {7} }
