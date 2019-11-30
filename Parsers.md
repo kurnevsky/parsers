@@ -1,7 +1,7 @@
 ---
-title: Parser Combinators
-subtitle: The functional approach to parsing
-author: Evgeny Kurnevsky
+title: Парсер-комбинаторы
+subtitle: Функциональный подход к парсингу
+author: Евгений Курневский
 date: 2019
 theme: Madrid
 colortheme: default
