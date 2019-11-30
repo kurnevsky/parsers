@@ -689,10 +689,12 @@ case class Error(msg: String, next: Input) extends ParseResult[T]
 # Scala библиотеки
 
 - scala-parser-combinators
-- atto
-- parboiled
-- gll-combinators
-- fastparse
+- Atto
+- Parboiled2
+- GLL Combinators
+- FastParse
+- ~~Meerkat~~
+- ~~Parsley~~
 
 # scala-parser-combinators
 
@@ -711,7 +713,7 @@ lazy val expr: Parser[Expr] =
   addsub
 ```
 
-# atto
+# Atto
 
 ```scala
 lazy val muldiv: Parser[Expr] =
@@ -728,7 +730,7 @@ lazy val expr: Parser[Expr] =
   addsub
 ```
 
-# parboiled
+# Parboiled2
 
 ```scala
 def muldiv: Rule1[Expr] = rule {
@@ -749,7 +751,7 @@ def expr: Rule1[Expr] = rule {
 }
 ```
 
-# gll-combinators
+# GLL Combinators
 
 ```scala
 lazy val muldiv: Parser[Expr] =
@@ -766,7 +768,7 @@ lazy val expr: Parser[Expr] =
   addsub
 ```
 
-# fastparse
+# FastParse
 
 ```scala
 def muldiv[_: P]: P[Expr] =
