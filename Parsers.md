@@ -392,14 +392,14 @@ final case class Op(o: Char, l: Expr, r: Expr) extends Expr
 # Пример разбора арифметических выражений
 
 ```scala
-lazy val digit: Parser[Int] =
+val digit: Parser[Int] =
   ('0'.p | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9') ^^ { _ - '0' }
 ```
 
 . . .
 
 ```scala
-lazy val natural: Parser[Int] =
+val natural: Parser[Int] =
   digit.rep1 ^^ { _.foldLeft(0)(_ * 10 + _) }
 ```
 
