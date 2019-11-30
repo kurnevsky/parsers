@@ -441,8 +441,6 @@ lazy val expr: Parser[Expr] =
 > 7-1-3*2
 ```
 
-. . .
-
 ```
 Op(-,Num(7),Op(-,Num(1),Op(*,Num(3),Num(2))))
 ```
