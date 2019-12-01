@@ -216,11 +216,13 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 
 # Комбинаторы парсеров
 
-Парсер числа 42:
+Парсер числа:
 
 ```scala
-"42".map(_.toInt)
-"42" ^^ { _.toInt }
+val string: Parser[String] = ???
+
+string.map(_.toInt)
+string ^^ { _.toInt }
 ```
 
 # Комбинаторы парсеров
@@ -302,7 +304,7 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 val number: Parser[Int] = ???
 
 number ~ ',' ~ number ^^ {
-  case n1 ~ _ ~ n2 => n1 + n2
+  case n1 ~ _ ~ n2 => n1 -> n2
 }
 ```
 
