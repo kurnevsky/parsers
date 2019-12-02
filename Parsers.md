@@ -693,7 +693,7 @@ Op(-,Op(-,Num(7),Num(1)),Op(*,Num(3),Num(2)))
 # Реальный мир
 
 ```scala
-trait Parser[T] extends (String => Either[String, (String, T)])
+trait Parser[+E, +T] extends (String => Either[E, (String, T)])
 ```
 
 . . .
