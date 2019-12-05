@@ -199,7 +199,7 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
   def map[U](f: T => U): Parser[U] = new Parser[U] {
     override def apply(s: String): LazyList[(String, U)] =
       self(s).map {
-        case (tail, b) => tail -> f(b)
+        case (tail, a) => tail -> f(a)
       }
   }
 }
@@ -236,9 +236,9 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
   def flatMap[U](f: T => Parser[U]): Parser[U] = new Parser[U] {
     override def apply(s: String): LazyList[(String, U)] =
       for {
-        (tail1, b) <- self(s)
-        (tail2, c) <- f(b)(tail1)
-      } yield tail2 -> c
+        (tail1, a) <- self(s)
+        (tail2, b) <- f(a)(tail1)
+      } yield tail2 -> b
   }
 }
 ```
@@ -291,9 +291,9 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
   def ~[U](next: => Parser[U]): Parser[T ~ U] = new Parser[T ~ U] {
     override def apply(s: String): LazyList[(String, T ~ U)] =
       for {
-        (tail1, b) <- self(s)
-        (tail2, c) <- next(tail1)
-      } yield tail2 -> new ~(b, c)
+        (tail1, a) <- self(s)
+        (tail2, b) <- next(tail1)
+      } yield tail2 -> new ~(a, b)
   }
 }
 ```
@@ -317,7 +317,7 @@ number ~ ',' ~ number ^^ {
 ```scala
 trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
   def ~>[U](next: => Parser[U]): Parser[U] =
-    self ~ next ^^ { case _ ~ c => c }
+    self ~ next ^^ { case _ ~ b => b }
 }
 ```
 
@@ -326,7 +326,7 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 ```scala
 trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
   def <~[U](next: => Parser[U]): Parser[T] =
-    self ~ next ^^ { case b ~ _ => b }
+    self ~ next ^^ { case a ~ _ => a }
 }
 ```
 
