@@ -32,7 +32,7 @@ trait Parsers {
 
     def |[T >: B](other: => Parser[A, T]): Parser[A, T] = new Parser[A, T] {
       override def apply(seq: Seq[A]): LazyList[(Seq[A], T)] =
-        self(seq) ++ other(seq)
+        self(seq) lazyAppendedAll other(seq)
     }
 
     def ? : Parser[A, Option[B]] =

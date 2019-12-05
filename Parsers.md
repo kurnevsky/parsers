@@ -346,7 +346,7 @@ val number: Parser[Int] = ???
 trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
   def |(other: => Parser[T]): Parser[T] = new Parser[T] {
     override def apply(s: String): LazyList[(String, T)] =
-      self(s) ++ other(s)
+      self(s) lazyAppendedAll other(s)
   }
 }
 ```
