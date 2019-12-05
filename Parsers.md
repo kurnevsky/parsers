@@ -518,9 +518,7 @@ Op(-,Num(7),Op(-,Num(1),Op(*,Num(3),Num(2))))
         };
     \end{scope}
 
-    \begin{scope}[xshift=3.5em]
-      \draw[<-, very thick] (-0.9,-2) -- (-1.4,-2);
-    \end{scope}
+    \draw[<-, very thick] (0.5,-2) -- (-0.5,-2);
 
     \begin{scope}[xshift=13em]
       \node {-}
