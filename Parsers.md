@@ -45,6 +45,8 @@ header-includes: |
 
 # antlr
 
+## Expr.g4
+
 ```antlr
 grammar Expr;
 expr: expr ('*'|'/') expr
@@ -205,7 +207,7 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 
 . . .
 
-## Синоним
+## Синоним в виде оператора
 
 ```scala
 trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
