@@ -117,10 +117,10 @@ trait Parser[+T] extends (String => (String, T))
 
 . . .
 
-Строка может быть разобрана множеством способов:
+Строка может быть не разобрана:
 
 ```scala
-trait Parser[+T] extends (String => LazyList[(String, T)])
+trait Parser[+T] extends (String => Option[(String, T)])
 ```
 
 # Простейшие парсеры
@@ -129,10 +129,10 @@ trait Parser[+T] extends (String => LazyList[(String, T)])
 
 ```scala
 implicit def symbol(c: Char): Parser[Char] = new Parser[Char] {
-  override def apply(s: String): LazyList[(String, Char)] =
+  override def apply(s: String): Option[(String, Char)] =
     s.headOption match {
-      case Some(`c`) => LazyList(s.tail -> c)
-      case _ => LazyList.empty
+      case Some(`c`) => Some(s.tail -> c)
+      case _ => None
     }
 }
 ```
@@ -143,11 +143,11 @@ implicit def symbol(c: Char): Parser[Char] = new Parser[Char] {
 
 ```scala
 implicit def token(t: String): Parser[String] = new Parser[String] {
-  override def apply(s: String): LazyList[(String, String)] =
+  override def apply(s: String): Option[(String, String)] =
     if (t == s.take(t.size))
-      LazyList(s.drop(t.size) -> t)
+      Some(s.drop(t.size) -> t)
     else
-      LazyList.empty
+      None
 }
 ```
 
@@ -157,8 +157,8 @@ implicit def token(t: String): Parser[String] = new Parser[String] {
 
 ```scala
 def succeed[T](v: T): Parser[T] = new Parser[T] {
-  override def apply(s: String): LazyList[(String, T)] =
-    LazyList(s -> v)
+  override def apply(s: String): Option[(String, T)] =
+    Some(s -> v)
 }
 ```
 
@@ -166,8 +166,8 @@ def succeed[T](v: T): Parser[T] = new Parser[T] {
 
 ```scala
 def fail: Parser[Nothing] = new Parser[Nothing] {
-  override def apply(s: String): LazyList[(String, Nothing)] =
-    LazyList.empty
+  override def apply(s: String): Option[(String, Nothing)] =
+    None
 }
 ```
 
@@ -176,7 +176,7 @@ def fail: Parser[Nothing] = new Parser[Nothing] {
 ## Комбинатор тождественного отображения
 
 ```scala
-trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
+trait Parser[T] extends (String => Option[(String, T)]) { self =>
   def p: Parser[T] = self
 }
 ```
@@ -195,9 +195,9 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 ## Комбинатор отображения
 
 ```scala
-trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
+trait Parser[T] extends (String => Option[(String, T)]) { self =>
   def map[U](f: T => U): Parser[U] = new Parser[U] {
-    override def apply(s: String): LazyList[(String, U)] =
+    override def apply(s: String): Option[(String, U)] =
       self(s).map {
         case (tail, a) => tail -> f(a)
       }
@@ -210,7 +210,7 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 ## Синоним в виде оператора
 
 ```scala
-trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
+trait Parser[T] extends (String => Option[(String, T)]) { self =>
   def ^^[U](f: T => U): Parser[U] =
     map(f)
 }
@@ -232,9 +232,9 @@ digits ^^ { _.toInt }
 ## Комбинатор монадического связывания
 
 ```scala
-trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
+trait Parser[T] extends (String => Option[(String, T)]) { self =>
   def flatMap[U](f: T => Parser[U]): Parser[U] = new Parser[U] {
-    override def apply(s: String): LazyList[(String, U)] =
+    override def apply(s: String): Option[(String, U)] =
       for {
         (tail1, a) <- self(s)
         (tail2, b) <- f(a)(tail1)
@@ -287,9 +287,9 @@ case class ~[+A, +B](_1: A, _2: B)
 ## Комбинатор последовательного соединения парсеров
 
 ```scala
-trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
+trait Parser[T] extends (String => Option[(String, T)]) { self =>
   def ~[U](next: => Parser[U]): Parser[T ~ U] = new Parser[T ~ U] {
-    override def apply(s: String): LazyList[(String, T ~ U)] =
+    override def apply(s: String): Option[(String, T ~ U)] =
       for {
         (tail1, a) <- self(s)
         (tail2, b) <- next(tail1)
@@ -315,7 +315,7 @@ number ~ ',' ~ number ^^ {
 ## С игнорированием левого результата
 
 ```scala
-trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
+trait Parser[T] extends (String => Option[(String, T)]) { self =>
   def ~>[U](next: => Parser[U]): Parser[U] =
     self ~ next ^^ { case _ ~ b => b }
 }
@@ -324,7 +324,7 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 ## С игнорированием правого результата
 
 ```scala
-trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
+trait Parser[T] extends (String => Option[(String, T)]) { self =>
   def <~[U](next: => Parser[U]): Parser[T] =
     self ~ next ^^ { case a ~ _ => a }
 }
@@ -345,10 +345,10 @@ val number: Parser[Int] = ???
 ## Комбинатор параллельного соединения парсеров
 
 ```scala
-trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
+trait Parser[T] extends (String => Option[(String, T)]) { self =>
   def |(other: => Parser[T]): Parser[T] = new Parser[T] {
-    override def apply(s: String): LazyList[(String, T)] =
-      self(s) lazyAppendedAll other(s)
+    override def apply(s: String): Option[(String, T)] =
+      self(s) orElse other(s)
   }
 }
 ```
@@ -366,7 +366,7 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 ## Комбинатор повторения 0 или более раз
 
 ```scala
-trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
+trait Parser[T] extends (String => Option[(String, T)]) { self =>
   def rep: Parser[List[T]] =
     self ~ self.rep ^^ { case h ~ t => h :: t } | succeed(Nil)
 }
@@ -375,7 +375,7 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 ## Комбинатор повторения 1 или более раз
 
 ```scala
-trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
+trait Parser[T] extends (String => Option[(String, T)]) { self =>
   def rep1: Parser[List[T]] =
     self ~ self.rep ^^ { case h ~ t => h :: t }
 }
@@ -397,9 +397,9 @@ val number: Parser[Int] = ???
 ## Комбинатор, гарантирующий завершение разбираемой строки
 
 ```scala
-trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
+trait Parser[T] extends (String => Option[(String, T)]) { self =>
   def just: Parser[T] = new Parser[T] {
-    override def apply(s: String): LazyList[(String, T)] =
+    override def apply(s: String): Option[(String, T)] =
       self(s).filter { case (tail, _) => tail.isEmpty }
   }
 }
@@ -678,26 +678,6 @@ Op(-,Op(-,Num(7),Num(1)),Op(*,Num(3),Num(2)))
       };
   \end{tikzpicture}
 \end{center}
-
-# Реальный мир
-
-```scala
-trait Parser[+E, +T] extends (String => Either[E, (String, T)])
-```
-
-. . .
-
-- Неоднозначные грамматики - плохо
-- Разбор одного варианта быстрее
-- Интересны ошибки разбора
-
-. . .
-
-Ограничение:
-
-```scala
-a ~ ("+" | "++") ~ b
-```
 
 # Итог
 
