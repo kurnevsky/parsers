@@ -431,9 +431,9 @@ val natural: Parser[Int] =
 
 ```scala
 lazy val muldiv: Parser[Expr] =
-  brackets ~ ('*'.p | '/') ~ muldiv ^^ {
+  natural ~ ('*'.p | '/') ~ muldiv ^^ {
     case l ~ o ~ r => Op(o, l, r): Expr
-  } | brackets
+  } | natural
 ```
 
 . . .
@@ -443,13 +443,6 @@ lazy val addsub: Parser[Expr] =
   muldiv ~ ('+'.p | '-') ~ addsub ^^ {
     case l ~ o ~ r => Op(o, l, r): Expr
   } | muldiv
-```
-
-. . .
-
-```scala
-lazy val brackets: Parser[Expr] =
-  '(' ~> addsub <~ ')' | natural ^^ Num
 ```
 
 . . .
@@ -539,15 +532,13 @@ Op(-,Num(7),Op(-,Num(1),Op(*,Num(3),Num(2))))
 
 ```scala
 lazy val muldiv: Parser[Expr] =
-  muldiv ~ ('*'.p | '/') ~ brackets ^^ {
+  muldiv ~ ('*'.p | '/') ~ natural ^^ {
     case l ~ o ~ r => Op(o, l, r): Expr
-  } | brackets
+  } | natural
 lazy val addsub: Parser[Expr] =
   addsub ~ ('+'.p | '-') ~ muldiv ^^ {
     case l ~ o ~ r => Op(o, l, r): Expr
   } | muldiv
-lazy val brackets: Parser[Expr] =
-  '(' ~> addsub <~ ')' | natural ^^ Num
 lazy val expr: Parser[Expr] =
   addsub.just
 ```
@@ -630,7 +621,7 @@ Exception in thread "main" java.lang.StackOverflowError
 
 ```scala
 lazy val muldiv: Parser[Expr] =
-  brackets ~ (('*'.p | '/') ~ brackets).rep ^^ {
+  natural ~ (('*'.p | '/') ~ natural).rep ^^ {
     case e ~ l => l.foldLeft(e) { (acc, nxt) => nxt match {
       case o ~ x => Op(o, acc, x)
     } }
@@ -641,8 +632,6 @@ lazy val addsub: Parser[Expr] =
       case o ~ x => Op(o, acc, x)
     } }
   }
-lazy val brackets: Parser[Expr] =
-  '(' ~> addsub <~ ')' | natural ^^ Num
 lazy val expr: Parser[Expr] =
   addsub.just
 ```
