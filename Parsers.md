@@ -703,8 +703,10 @@ Op(-,Op(-,Num(7),Num(1)),Op(*,Num(3),Num(2)))
 - Parboiled2
 - GLL Combinators
 - FastParse
+- Scallion
 - ~~Meerkat~~
 - ~~Parsley~~
+- ~~Parseback~~
 
 # scala-parser-combinators
 
