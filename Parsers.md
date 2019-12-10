@@ -221,10 +221,10 @@ trait Parser[T] extends (String => LazyList[(String, T)]) { self =>
 Парсер числа:
 
 ```scala
-val string: Parser[String] = ???
+val digits: Parser[String] = ???
 
-string.map(_.toInt)
-string ^^ { _.toInt }
+digits.map(_.toInt)
+digits ^^ { _.toInt }
 ```
 
 # Комбинаторы парсеров
